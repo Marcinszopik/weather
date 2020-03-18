@@ -1,24 +1,33 @@
 $(document).ready(function() {
-    $('#weatherLocation').click(function() {
-      const city = $('#location').val();
-      $('#location').val("");
-  
-      let request = new XMLHttpRequest();
-      const url = `http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=[API-KEY-GOES-HERE]`;
-  
-      request.onreadystatechange = function() {
-        if (this.readyState === 4 && this.status === 200) {
-          const response = JSON.parse(this.responseText);
-          getElements(response);
+  $('#weatherLocation').click(function() {
+    const city = $('#location').val();
+    $('#location').val("");
+
+    asyncApiCall();
+
+    (() => {
+      try {
+        let response = await fetch(`http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=21a6e9c2037c97b8495a71b97b081a4f`);
+        let jsonifiedResponse;
+        if (response.ok && response.status == 200) {
+          jsonifiedResponse = await response.json();
+        } else {
+          jsonifiedResponse = false;
         }
+        getElements(jsonifiedResponse);
+      } catch {
+        getElements(false);
       }
-  
-      request.open("GET", url, true);
-      request.send();
-  
-     const getElements = function(response) {
+    })()
+
+    const getElements = function(response) {
+      if (response) {
         $('.showHumidity').text(`The humidity in ${city} is ${response.main.humidity}%`);
         $('.showTemp').text(`The temperature in Kelvins is ${response.main.temp} degrees.`);
+      } else {
+        $('.showHumidity').text(`There was an error handling your request.`);
+        $('.showTemp').text(`Please check your inputs and try again!`);
       }
-    });
+    }
   });
+});
